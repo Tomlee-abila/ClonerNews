@@ -1,0 +1,218 @@
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  width: 90%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f0f2f5;
+}
+
+header {
+  background-color: #1877f2;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  position: relative; /* Position relative for notification icon */
+}
+
+nav {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 1rem;
+  background-color: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+nav a {
+  color: #1877f2;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.post {
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.post h2 {
+  margin-top: 0;
+  color: #1877f2;
+}
+
+.post-meta {
+  font-size: 0.8rem;
+  color: #65676b;
+}
+
+.comments {
+  margin-top: 1rem;
+}
+
+.comment {
+  background-color: #f2f3f5;
+  border-radius: 18px;
+  padding: 12px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.comment-content {
+  margin-left: 40px;
+}
+
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #dfe3ee;
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #1877f2;
+}
+
+.nested-comments {
+  margin-left: 20px;
+  border-left: 2px solid #dfe3ee;
+  padding-left: 10px;
+}
+
+.comment-actions {
+  margin-top: 5px;
+  font-size: 0.8rem;
+}
+
+.comment-actions a {
+  color: #65676b;
+  text-decoration: none;
+  margin-right: 10px;
+}
+
+.load-more {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  background-color: #1877f2;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.live-updates {
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  overflow-wrap: break-word; /* Ensure content wraps */
+}
+
+.stories-updates {
+  background-color: #f2f3f5;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+#notification {
+  display: none;
+  background-color: #1877f2;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.toggle-comments {
+  cursor: pointer;
+  color: #1877f2;
+  font-weight: bold;
+}
+
+.poll-options {
+  margin-top: 10px;
+}
+
+.poll-option {
+  background-color: #f2f3f5;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+}
+
+.poll-option-score {
+  font-weight: bold;
+  color: #1877f2;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+main {
+  width: 70%;
+}
+
+aside.sidebar {
+  width: 20%;
+  background-color: #f2f3f5; /* Ensure background color for sidebar */
+}
+
+.notification-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  background-color: #f2f3f5;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  font-size: 20px; /* Adjust size of the icon */
+}
+
+.notification-icon .fa-bell {
+  color: #1877f2;
+}
+
+.notification-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff0000;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
