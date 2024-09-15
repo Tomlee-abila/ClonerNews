@@ -201,12 +201,33 @@ const checkForUpdates = async () => {
   }
 }
 
+const fetchSidebarPosts = async (postType, listId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}${postType}.json`);
+    const postIds = response.data.slice(0, 10); // Limit to 10 posts for the sidebar
+    const posts = await Promise.all(postIds.map(fetchItem));
+    
+    const list = document.getElementById(listId);
+    list.innerHTML = posts.map(post => `
+      <li><a href="${post.url || `https://news.ycombinator.com/item?id=${post.id}`}" target="_blank">${post.title}</a></li>
+    `).join('');
+  } catch (error) {
+    console.error('Error fetching sidebar posts:', error);
+  }
+}
+
+const handleScroll = () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) { // Trigger when near the bottom
+    loadPosts();
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadPosts();
   document.querySelectorAll('nav a').forEach(navItem => {
     navItem.addEventListener('click', handleNavClick);
   });
-  document.getElementById('load-more').addEventListener('click', loadPosts);
+  
   document.getElementById('main-content').addEventListener('click', async (event) => {
     if (event.target.classList.contains('toggle-comments')) {
       event.preventDefault();
@@ -231,48 +252,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const initialPosts = await fetchPosts(currentPostType, 0, POSTS_PER_PAGE);
   initialPosts.forEach(post => loadedPostIds.add(post.id));
 
+  // Set up scroll event listener for lazy loading
+  window.addEventListener('scroll', throttle(handleScroll, 200));
+
+  // Set up interval for checking updates
   setInterval(throttle(checkForUpdates, 5000), 5000);
-});
-
-const fetchSidebarPosts = async (postType, listId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}${postType}.json`);
-    const postIds = response.data.slice(0, 10); // Limit to 10 posts for the sidebar
-    const posts = await Promise.all(postIds.map(fetchItem));
-    
-    const list = document.getElementById(listId);
-    list.innerHTML = posts.map(post => `
-      <li><a href="${post.url || `https://news.ycombinator.com/item?id=${post.id}`}" target="_blank">${post.title}</a></li>
-    `).join('');
-  } catch (error) {
-    console.error('Error fetching sidebar posts:', error);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const notificationIcon = document.getElementById('notification-icon');
-  const notificationCount = document.getElementById('notification-count');
-  let updatesCount = 0;
-
-  // Function to simulate receiving new updates
-  function fetchNewUpdates() {
-    // Simulate receiving new updates
-    updatesCount = Math.floor(Math.random() * 10) + 1;
-    notificationCount.textContent = updatesCount;
-    notificationIcon.style.display = 'flex'; // Show notification icon
-  }
-
-  // Function to hide the notification icon
-  function hideNotification() {
-    notificationIcon.style.display = 'none';
-  }
-
-  // Show notification every 5 seconds
-  setInterval(() => {
-    fetchNewUpdates();
-    setTimeout(hideNotification, 3000); // Hide after 3 seconds
-  }, 5000); // Update every 5 seconds
-
-  // Initialize
-  fetchNewUpdates();
 });
