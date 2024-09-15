@@ -1,7 +1,7 @@
 const API_BASE_URL = 'https://hacker-news.firebaseio.com/v0/';
-let currentPostType = 'topstories';
+let currentPostType = 'newstories';
 let loadedPosts = 0;
-const POSTS_PER_PAGE = 10;
+const POSTS_PER_PAGE = 7;
 let lastUpdateTime = Date.now();
 let loadedPostIds = new Set();
 
@@ -19,14 +19,21 @@ const throttle = (func, limit) => {
 }
 
 const fetchItem = async (id) => {
-  const response = await axios.get(`${API_BASE_URL}item/${id}.json`);
-  return response.data;
+  const response = await fetch(`${API_BASE_URL}item/${id}.json`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch item ${id}: ${response.statusText}`);
+  }
+  return response.json();
 }
 
 const fetchPosts = async (postType, start, end) => {
-  const response = await axios.get(`${API_BASE_URL}${postType}.json`);
-  const postIds = response.data.slice(start, end);
-  return Promise.all(postIds.map(fetchItem));
+  const response = await fetch(`${API_BASE_URL}${postType}.json`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch posts of type ${postType}: ${response.statusText}`);
+  }
+  const postIds = await response.json();
+  const postIdsSubset = postIds.slice(start, end);
+  return Promise.all(postIdsSubset.map(fetchItem));
 }
 
 const renderPost = (post) => {
@@ -34,7 +41,7 @@ const renderPost = (post) => {
   postElement.className = 'post';
   postElement.innerHTML = `
     <h2><a href="${post.url || `https://news.ycombinator.com/item?id=${post.id}`}" target="_blank">${post.title}</a></h2>
-    <p class="post-meta">By ${post.by} | ${new Date(post.time * 1000).toLocaleString()} | ${post.score} points</p>
+    <p class="post-meta">By ${post.by} | ${new Date(post.time * 1000)} | ${post.score} points</p>
     ${post.text ? `<p>${post.text}</p>` : ''}
     ${renderPostSpecificContent(post)}
     <a href="#" class="toggle-comments" data-id="${post.id}">Show Comments (${post.descendants || 0})</a>
@@ -171,8 +178,11 @@ const showNotification = (message) => {
 }
 
 const checkForUpdates = async () => {
-  const response = await axios.get(`${API_BASE_URL}updates.json`);
-  const updates = response.data;
+  const response = await fetch(`${API_BASE_URL}updates.json`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch updates: ${response.statusText}`);
+  }
+  const updates = await response.json();
 
   if (updates.items.length > 0 || updates.profiles.length > 0) {
     const updateTime = Date.now();
@@ -201,12 +211,37 @@ const checkForUpdates = async () => {
   }
 }
 
+const fetchSidebarPosts = async (postType, listId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}${postType}.json`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch sidebar posts of type ${postType}: ${response.statusText}`);
+    }
+    const postIds = await response.json();
+    const postIdsSubset = postIds.slice(0, 10); // Limit to 10 posts for the sidebar
+    const posts = await Promise.all(postIdsSubset.map(fetchItem));
+    
+    const list = document.getElementById(listId);
+    list.innerHTML = posts.map(post => `
+      <li><a href="${post.url || `https://news.ycombinator.com/item?id=${post.id}`}" target="_blank">${post.title}</a></li>
+    `).join('');
+  } catch (error) {
+    console.error('Error fetching sidebar posts:', error);
+  }
+}
+
+const handleScroll = () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) { // Trigger when near the bottom
+    loadPosts();
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadPosts();
   document.querySelectorAll('nav a').forEach(navItem => {
     navItem.addEventListener('click', handleNavClick);
   });
-  document.getElementById('load-more').addEventListener('click', loadPosts);
+  
   document.getElementById('main-content').addEventListener('click', async (event) => {
     if (event.target.classList.contains('toggle-comments')) {
       event.preventDefault();
@@ -231,48 +266,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const initialPosts = await fetchPosts(currentPostType, 0, POSTS_PER_PAGE);
   initialPosts.forEach(post => loadedPostIds.add(post.id));
 
+  // Set up scroll event listener for lazy loading
+  window.addEventListener('scroll', throttle(handleScroll, 200));
+
+  // Set up interval for checking updates
   setInterval(throttle(checkForUpdates, 5000), 5000);
-});
-
-const fetchSidebarPosts = async (postType, listId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}${postType}.json`);
-    const postIds = response.data.slice(0, 10); // Limit to 10 posts for the sidebar
-    const posts = await Promise.all(postIds.map(fetchItem));
-    
-    const list = document.getElementById(listId);
-    list.innerHTML = posts.map(post => `
-      <li><a href="${post.url || `https://news.ycombinator.com/item?id=${post.id}`}" target="_blank">${post.title}</a></li>
-    `).join('');
-  } catch (error) {
-    console.error('Error fetching sidebar posts:', error);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const notificationIcon = document.getElementById('notification-icon');
-  const notificationCount = document.getElementById('notification-count');
-  let updatesCount = 0;
-
-  // Function to simulate receiving new updates
-  function fetchNewUpdates() {
-    // Simulate receiving new updates
-    updatesCount = Math.floor(Math.random() * 10) + 1;
-    notificationCount.textContent = updatesCount;
-    notificationIcon.style.display = 'flex'; // Show notification icon
-  }
-
-  // Function to hide the notification icon
-  function hideNotification() {
-    notificationIcon.style.display = 'none';
-  }
-
-  // Show notification every 5 seconds
-  setInterval(() => {
-    fetchNewUpdates();
-    setTimeout(hideNotification, 3000); // Hide after 3 seconds
-  }, 5000); // Update every 5 seconds
-
-  // Initialize
-  fetchNewUpdates();
 });
