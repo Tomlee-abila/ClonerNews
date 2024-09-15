@@ -1,7 +1,7 @@
 const API_BASE_URL = 'https://hacker-news.firebaseio.com/v0/';
-let currentPostType = 'topstories';
+let currentPostType = 'newstories';
 let loadedPosts = 0;
-const POSTS_PER_PAGE = 10;
+const POSTS_PER_PAGE = 7;
 let lastUpdateTime = Date.now();
 let loadedPostIds = new Set();
 
@@ -34,7 +34,7 @@ const renderPost = (post) => {
   postElement.className = 'post';
   postElement.innerHTML = `
     <h2><a href="${post.url || `https://news.ycombinator.com/item?id=${post.id}`}" target="_blank">${post.title}</a></h2>
-    <p class="post-meta">By ${post.by} | ${new Date(post.time * 1000).toLocaleString()} | ${post.score} points</p>
+    <p class="post-meta">By ${post.by} | ${new Date(post.time * 1000)} | ${post.score} points</p>
     ${post.text ? `<p>${post.text}</p>` : ''}
     ${renderPostSpecificContent(post)}
     <a href="#" class="toggle-comments" data-id="${post.id}">Show Comments (${post.descendants || 0})</a>
