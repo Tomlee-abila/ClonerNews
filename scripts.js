@@ -19,14 +19,21 @@ const throttle = (func, limit) => {
 }
 
 const fetchItem = async (id) => {
-  const response = await axios.get(`${API_BASE_URL}item/${id}.json`);
-  return response.data;
+  const response = await fetch(`${API_BASE_URL}item/${id}.json`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch item ${id}: ${response.statusText}`);
+  }
+  return response.json();
 }
 
 const fetchPosts = async (postType, start, end) => {
-  const response = await axios.get(`${API_BASE_URL}${postType}.json`);
-  const postIds = response.data.slice(start, end);
-  return Promise.all(postIds.map(fetchItem));
+  const response = await fetch(`${API_BASE_URL}${postType}.json`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch posts of type ${postType}: ${response.statusText}`);
+  }
+  const postIds = await response.json();
+  const postIdsSubset = postIds.slice(start, end);
+  return Promise.all(postIdsSubset.map(fetchItem));
 }
 
 const renderPost = (post) => {
@@ -171,8 +178,11 @@ const showNotification = (message) => {
 }
 
 const checkForUpdates = async () => {
-  const response = await axios.get(`${API_BASE_URL}updates.json`);
-  const updates = response.data;
+  const response = await fetch(`${API_BASE_URL}updates.json`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch updates: ${response.statusText}`);
+  }
+  const updates = await response.json();
 
   if (updates.items.length > 0 || updates.profiles.length > 0) {
     const updateTime = Date.now();
@@ -203,9 +213,13 @@ const checkForUpdates = async () => {
 
 const fetchSidebarPosts = async (postType, listId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}${postType}.json`);
-    const postIds = response.data.slice(0, 10); // Limit to 10 posts for the sidebar
-    const posts = await Promise.all(postIds.map(fetchItem));
+    const response = await fetch(`${API_BASE_URL}${postType}.json`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch sidebar posts of type ${postType}: ${response.statusText}`);
+    }
+    const postIds = await response.json();
+    const postIdsSubset = postIds.slice(0, 10); // Limit to 10 posts for the sidebar
+    const posts = await Promise.all(postIdsSubset.map(fetchItem));
     
     const list = document.getElementById(listId);
     list.innerHTML = posts.map(post => `
