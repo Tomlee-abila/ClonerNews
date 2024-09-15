@@ -93,8 +93,6 @@ const renderComment = (comment, depth = 0) => {
         <p class="post-meta">${comment.by}</p>
         <p>${comment.text}</p>
         <div class="comment-actions">
-          <a href="#" class="like-comment">Like</a>
-          <a href="#" class="reply-comment">Reply</a>
           ${comment.kids ? `<a href="#" class="toggle-replies" data-id="${comment.id}">Show Replies (${comment.kids.length})</a>` : ''}
         </div>
       </div>
