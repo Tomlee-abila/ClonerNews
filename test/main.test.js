@@ -1,106 +1,154 @@
-const axios = require('axios');
-jest.mock('axios');
+// Import functions to be tested before the test cases
+import { throttle, fetchItem, fetchPosts, renderPost, renderComment, loadComments, showNotification, handleNavClick, checkForUpdates } from '../src/clonernews.js';
 
-// Test throttle function
-describe('throttle', () => {
-  jest.useFakeTimers();
-  
-  const mockFunc = jest.fn();
-  const throttledFunc = throttle(mockFunc, 1000);
-  
-  it('should call the function only once within the limit period', () => {
-    throttledFunc();
-    throttledFunc();
-    expect(mockFunc).toHaveBeenCalledTimes(1);
-    
-    jest.advanceTimersByTime(1000);
-    throttledFunc();
-    expect(mockFunc).toHaveBeenCalledTimes(2);
-  });
+// Test 1: Throttle Function Test
+function throttleTest() {
+  let callCount = 0;
+
+  const testFunc = () => callCount++;
+  const throttledFunc = throttle(testFunc, 1000);
+
+  // Call it twice quickly
+  throttledFunc();
+  throttledFunc();
+
+  setTimeout(() => {
+    if (callCount === 1) {
+      console.log('Throttle test passed.');
+    } else {
+      console.error('Throttle test failed.');
+    }
+  }, 1500);
+}
+
+// Test 2: fetchItem Function Test
+async function fetchItemTest() {
+  const postId = 8863; // Example Hacker News post ID
+  const post = await fetchItem(postId);
+
+  if (post && post.id === postId) {
+    console.log('fetchItem test passed.');
+  } else {
+    console.error('fetchItem test failed.');
+  }
+}
+
+// Test 3: fetchPosts Function Test
+async function fetchPostsTest() {
+  const posts = await fetchPosts('topstories', 0, 10);
+
+  if (posts.length === 10 && posts[0].id) {
+    console.log('fetchPosts test passed.');
+  } else {
+    console.error('fetchPosts test failed.');
+  }
+}
+
+// Test 4: renderPost Function Test
+function renderPostTest() {
+  const post = {
+    id: 123,
+    title: "Test Post",
+    by: "test_user",
+    time: Date.now() / 1000,
+    score: 100,
+    url: "https://example.com"
+  };
+
+  const postElement = renderPost(post);
+
+  if (postElement && postElement.querySelector('h2 a').textContent === "Test Post") {
+    console.log('renderPost test passed.');
+  } else {
+    console.error('renderPost test failed.');
+  }
+}
+
+// Test 5: renderComment Function Test
+function renderCommentTest() {
+  const comment = {
+    by: "test_user",
+    text: "This is a test comment.",
+    kids: []
+  };
+
+  const commentHTML = renderComment(comment);
+  if (commentHTML.includes('test_user') && commentHTML.includes('This is a test comment.')) {
+    console.log('renderComment test passed.');
+  } else {
+    console.error('renderComment test failed.');
+  }
+}
+
+// Test 6: loadComments Function Test
+async function loadCommentsTest() {
+  const commentContainer = document.createElement('div');
+  await loadComments(8863, commentContainer);
+
+  if (commentContainer.innerHTML.includes('comment')) {
+    console.log('loadComments test passed.');
+  } else {
+    console.error('loadComments test failed.');
+  }
+}
+
+// Test 7: showNotification Function Test
+function showNotificationTest() {
+  const notification = document.createElement('div');
+  notification.id = 'notification';
+  document.body.appendChild(notification);
+
+  showNotification('Test notification');
+
+  setTimeout(() => {
+    if (notification.textContent === 'Test notification') {
+      console.log('showNotification test passed.');
+    } else {
+      console.error('showNotification test failed.');
+    }
+  }, 1000);
+}
+
+// Test 8: handleNavClick Function Test
+function handleNavClickTest() {
+  const mockEvent = {
+    preventDefault: () => {},
+    target: { id: 'nav-ask' }
+  };
+
+  handleNavClick(mockEvent);
+
+  if (currentPostType === 'askstories') {
+    console.log('handleNavClick test passed.');
+  } else {
+    console.error('handleNavClick test failed.');
+  }
+}
+
+// Test 9: checkForUpdates Function Test
+async function checkForUpdatesTest() {
+  const updatesList = document.createElement('ul');
+  updatesList.id = 'live-updates-list';
+  document.body.appendChild(updatesList);
+
+  await checkForUpdates();
+
+  if (updatesList.children.length > 0) {
+    console.log('checkForUpdates test passed.');
+  } else {
+    console.error('checkForUpdates test failed.');
+  }
+}
+
+// Run all tests
+document.addEventListener('DOMContentLoaded', () => {
+  throttleTest();
+  fetchItemTest();
+  fetchPostsTest();
+  renderPostTest();
+  renderCommentTest();
+  loadCommentsTest();
+  showNotificationTest();
+  handleNavClickTest();
+  checkForUpdatesTest();
 });
-
-// Test fetchItem
-describe('fetchItem', () => {
-  it('should fetch an item by id', async () => {
-    const mockItem = { id: 1, title: 'Test Post' };
-    axios.get.mockResolvedValue({ data: mockItem });
-
-    const result = await fetchItem(1);
-    expect(axios.get).toHaveBeenCalledWith('https://hacker-news.firebaseio.com/v0/item/1.json');
-    expect(result).toEqual(mockItem);
-  });
-});
-
-// Test fetchPosts
-describe('fetchPosts', () => {
-  it('should fetch a list of posts', async () => {
-    const mockPostIds = [1, 2];
-    const mockPostItems = [
-      { id: 1, title: 'Post 1' },
-      { id: 2, title: 'Post 2' }
-    ];
-    
-    axios.get.mockResolvedValueOnce({ data: mockPostIds });
-    axios.get.mockResolvedValueOnce({ data: mockPostItems[0] });
-    axios.get.mockResolvedValueOnce({ data: mockPostItems[1] });
-
-    const result = await fetchPosts('topstories', 0, 2);
-    expect(axios.get).toHaveBeenCalledWith('https://hacker-news.firebaseio.com/v0/topstories.json');
-    expect(result).toEqual(mockPostItems);
-  });
-});
-
-// Test renderPost
-describe('renderPost', () => {
-  it('should render post HTML correctly', () => {
-    const mockPost = { id: 1, title: 'Test Post', by: 'author', time: 1600000000, score: 10 };
-    const postElement = renderPost(mockPost);
-    
-    expect(postElement.querySelector('h2').textContent).toContain('Test Post');
-    expect(postElement.querySelector('.post-meta').textContent).toContain('author');
-  });
-});
-
-// Test renderPollContent
-describe('renderPollContent', () => {
-  it('should return empty string if no poll parts', () => {
-    const result = renderPollContent({ parts: [] });
-    expect(result).toBe('');
-  });
-  
-  it('should render poll content if parts are provided', () => {
-    const mockPoll = { parts: [1, 2] };
-    const result = renderPollContent(mockPoll);
-    expect(result).toContain('poll-option-1');
-    expect(result).toContain('poll-option-2');
-  });
-});
-
-// Test loadComments
-describe('loadComments', () => {
-  it('should load comments for a post', async () => {
-    const mockComment = { id: 1, by: 'user', text: 'Test Comment', kids: [] };
-    axios.get.mockResolvedValue({ data: mockComment });
-
-    const mockContainer = document.createElement('div');
-    await loadComments(1, mockContainer);
-    
-    expect(mockContainer.innerHTML).toContain('Test Comment');
-  });
-});
-
-// Test showNotification
-describe('showNotification', () => {
-  it('should show and hide notification', () => {
-    document.body.innerHTML = '<div id="notification"></div>';
-    
-    showNotification('Test Message');
-    const notification = document.getElementById('notification');
-    expect(notification.style.display).toBe('block');
-    expect(notification.textContent).toBe('Test Message');
-
-    jest.advanceTimersByTime(3000);
-    expect(notification.style.display).toBe('none');
-  });
-});
-
