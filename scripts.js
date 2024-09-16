@@ -180,7 +180,7 @@ const handleNavClick = (event) => {
 
 const showNotification = (message) => {
   const notification = document.getElementById('notification');
-  notification.textContent = message;
+  notification.innerHTML = message;
   notification.style.display = 'block';
   setTimeout(() => {
     notification.style.display = 'none';
@@ -197,12 +197,12 @@ const checkForUpdates = async () => {
   if (updates.items.length > 0 || updates.profiles.length > 0) {
     const updateTime = Date.now();
     if (updateTime - lastUpdateTime >= 5000) {
-      showNotification('New updates available!');
+      showNotification(`New update available! from ${updates.profiles[0]}`);
       lastUpdateTime = updateTime;
     }
     
     const updatesList = document.getElementById('live-updates-list');
-    updatesList.innerHTML = '';
+    // updatesList.innerHTML = '';
     
     const newPosts = [];
     for (const itemId of updates.items) {
@@ -213,9 +213,10 @@ const checkForUpdates = async () => {
     }
     
     newPosts.slice(0, 5).forEach(post => {
-      const li = document.createElement('li');
-      li.textContent = `${post.type}: ${post.title || post.text}`;
-      updatesList.appendChild(li);
+      // const li = document.createElement('li');
+      // li.textContent = `${post.type}: ${post.title || post.text}`;
+      let cont = `<li>${post.type}: ${post.title || post.text}</li>`
+      updatesList.innerHTML = cont + updatesList.innerHTML;
       loadedPostIds.add(post.id);
     });
   }
