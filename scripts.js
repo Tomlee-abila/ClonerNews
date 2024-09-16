@@ -131,8 +131,8 @@ const handleCommentActions = async (event) => {
   if (event.target.classList.contains('toggle-replies')) {
     const replyId = event.target.getAttribute('data-id');
     const replyContainer = document.getElementById(`replies-${replyId}`);
-    if (replyContainer.innerHTML === '') {
-      const reply = await fetchItem(replyId);
+    const reply = await fetchItem(replyId);
+    if (replyContainer.innerHTML === '') {      
       if (reply.kids) {
         await loadComments(replyId, replyContainer, 1);
       }
