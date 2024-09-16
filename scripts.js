@@ -1,7 +1,7 @@
 const API_BASE_URL = 'https://hacker-news.firebaseio.com/v0/';
-let currentPostType = 'topstories';
+let currentPostType = 'newstories';
 let loadedPosts = 0;
-const POSTS_PER_PAGE = 10;
+const POSTS_PER_PAGE = 7;
 let lastUpdateTime = Date.now();
 let loadedPostIds = new Set();
 
@@ -19,14 +19,21 @@ const throttle = (func, limit) => {
 }
 
 const fetchItem = async (id) => {
-  const response = await axios.get(`${API_BASE_URL}item/${id}.json`);
-  return response.data;
+  const response = await fetch(`${API_BASE_URL}item/${id}.json`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch item ${id}: ${response.statusText}`);
+  }
+  return response.json();
 }
 
 const fetchPosts = async (postType, start, end) => {
-  const response = await axios.get(`${API_BASE_URL}${postType}.json`);
-  const postIds = response.data.slice(start, end);
-  return Promise.all(postIds.map(fetchItem));
+  const response = await fetch(`${API_BASE_URL}${postType}.json`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch posts of type ${postType}: ${response.statusText}`);
+  }
+  const postIds = await response.json();
+  const postIdsSubset = postIds.slice(start, end);
+  return Promise.all(postIdsSubset.map(fetchItem));
 }
 
 const renderPost = (post) => {
@@ -34,7 +41,7 @@ const renderPost = (post) => {
   postElement.className = 'post';
   postElement.innerHTML = `
     <h2><a href="${post.url || `https://news.ycombinator.com/item?id=${post.id}`}" target="_blank">${post.title}</a></h2>
-    <p class="post-meta">By ${post.by} | ${new Date(post.time * 1000).toLocaleString()} | ${post.score} points</p>
+    <p class="post-meta">By ${post.by} | ${new Date(post.time * 1000)} | ${post.score} points</p>
     ${post.text ? `<p>${post.text}</p>` : ''}
     ${renderPostSpecificContent(post)}
     <a href="#" class="toggle-comments" data-id="${post.id}">Show Comments (${post.descendants || 0})</a>
@@ -86,8 +93,6 @@ const renderComment = (comment, depth = 0) => {
         <p class="post-meta">${comment.by}</p>
         <p>${comment.text}</p>
         <div class="comment-actions">
-          <a href="#" class="like-comment">Like</a>
-          <a href="#" class="reply-comment">Reply</a>
           ${comment.kids ? `<a href="#" class="toggle-replies" data-id="${comment.id}">Show Replies (${comment.kids.length})</a>` : ''}
         </div>
       </div>
@@ -138,8 +143,19 @@ const loadPosts = async () => {
 
 const handleNavClick = (event) => {
   event.preventDefault();
-  const clickedNav = event.target.id.split('-')[1];
-  switch (clickedNav) {
+  
+  // Remove the 'active' class from all navigation items
+  document.querySelectorAll('nav a').forEach(navItem => {
+    navItem.classList.remove('active');
+  });
+  
+  // Add the 'active' class to the clicked navigation item
+  const clickedNav = event.target;
+  clickedNav.classList.add('active');
+  
+  // Update the current post type based on the clicked navigation item
+  const clickedNavId = clickedNav.id.split('-')[1];
+  switch (clickedNavId) {
     case 'jobs':
       currentPostType = 'jobstories';
       break;
@@ -155,6 +171,7 @@ const handleNavClick = (event) => {
     default:
       currentPostType = 'topstories';
   }
+  
   document.getElementById('main-content').innerHTML = '';
   loadedPosts = 0;
   loadedPostIds.clear();
@@ -163,7 +180,7 @@ const handleNavClick = (event) => {
 
 const showNotification = (message) => {
   const notification = document.getElementById('notification');
-  notification.textContent = message;
+  notification.innerHTML = message;
   notification.style.display = 'block';
   setTimeout(() => {
     notification.style.display = 'none';
@@ -171,18 +188,21 @@ const showNotification = (message) => {
 }
 
 const checkForUpdates = async () => {
-  const response = await axios.get(`${API_BASE_URL}updates.json`);
-  const updates = response.data;
+  const response = await fetch(`${API_BASE_URL}updates.json`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch updates: ${response.statusText}`);
+  }
+  const updates = await response.json();
 
   if (updates.items.length > 0 || updates.profiles.length > 0) {
     const updateTime = Date.now();
     if (updateTime - lastUpdateTime >= 5000) {
-      showNotification('New updates available!');
+      showNotification(`New update available! from ${updates.profiles[0]}`);
       lastUpdateTime = updateTime;
     }
     
     const updatesList = document.getElementById('live-updates-list');
-    updatesList.innerHTML = '';
+    // updatesList.innerHTML = '';
     
     const newPosts = [];
     for (const itemId of updates.items) {
@@ -193,11 +213,38 @@ const checkForUpdates = async () => {
     }
     
     newPosts.slice(0, 5).forEach(post => {
-      const li = document.createElement('li');
-      li.textContent = `${post.type}: ${post.title || post.text}`;
-      updatesList.appendChild(li);
+      // const li = document.createElement('li');
+      // li.textContent = `${post.type}: ${post.title || post.text}`;
+      console.log(post)
+      let cont = `<li><p><h5>${post.type} by: ${post.by} </h5>${post.title || post.text}</p></li>`
+      updatesList.innerHTML = cont + updatesList.innerHTML;
       loadedPostIds.add(post.id);
     });
+  }
+}
+
+const fetchSidebarPosts = async (postType, listId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}${postType}.json`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch sidebar posts of type ${postType}: ${response.statusText}`);
+    }
+    const postIds = await response.json();
+    const postIdsSubset = postIds.slice(0, 10); // Limit to 10 posts for the sidebar
+    const posts = await Promise.all(postIdsSubset.map(fetchItem));
+    
+    const list = document.getElementById(listId);
+    list.innerHTML = posts.map(post => `
+      <li><a href="${post.url || `https://news.ycombinator.com/item?id=${post.id}`}" target="_blank">${post.title}</a></li>
+    `).join('');
+  } catch (error) {
+    console.error('Error fetching sidebar posts:', error);
+  }
+}
+
+const handleScroll = () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) { // Trigger when near the bottom
+    loadPosts();
   }
 }
 
@@ -206,7 +253,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('nav a').forEach(navItem => {
     navItem.addEventListener('click', handleNavClick);
   });
-  document.getElementById('load-more').addEventListener('click', loadPosts);
+  
   document.getElementById('main-content').addEventListener('click', async (event) => {
     if (event.target.classList.contains('toggle-comments')) {
       event.preventDefault();
@@ -231,48 +278,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const initialPosts = await fetchPosts(currentPostType, 0, POSTS_PER_PAGE);
   initialPosts.forEach(post => loadedPostIds.add(post.id));
 
+  // Set up scroll event listener for lazy loading
+  window.addEventListener('scroll', throttle(handleScroll, 200));
+
+  // Set up interval for checking updates
   setInterval(throttle(checkForUpdates, 5000), 5000);
-});
-
-const fetchSidebarPosts = async (postType, listId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}${postType}.json`);
-    const postIds = response.data.slice(0, 10); // Limit to 10 posts for the sidebar
-    const posts = await Promise.all(postIds.map(fetchItem));
-    
-    const list = document.getElementById(listId);
-    list.innerHTML = posts.map(post => `
-      <li><a href="${post.url || `https://news.ycombinator.com/item?id=${post.id}`}" target="_blank">${post.title}</a></li>
-    `).join('');
-  } catch (error) {
-    console.error('Error fetching sidebar posts:', error);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const notificationIcon = document.getElementById('notification-icon');
-  const notificationCount = document.getElementById('notification-count');
-  let updatesCount = 0;
-
-  // Function to simulate receiving new updates
-  function fetchNewUpdates() {
-    // Simulate receiving new updates
-    updatesCount = Math.floor(Math.random() * 10) + 1;
-    notificationCount.textContent = updatesCount;
-    notificationIcon.style.display = 'flex'; // Show notification icon
-  }
-
-  // Function to hide the notification icon
-  function hideNotification() {
-    notificationIcon.style.display = 'none';
-  }
-
-  // Show notification every 5 seconds
-  setInterval(() => {
-    fetchNewUpdates();
-    setTimeout(hideNotification, 3000); // Hide after 3 seconds
-  }, 5000); // Update every 5 seconds
-
-  // Initialize
-  fetchNewUpdates();
 });

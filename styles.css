@@ -5,8 +5,9 @@ body {
   width: 90%;
   margin: 0 auto;
   padding: 20px;
-  background-color: #f0f2f5;
+  background: url("https://media.istockphoto.com/id/1345527119/video/graphical-modern-digital-world-news-studio-loop-background.jpg?s=640x640&k=20&c=cr1SYYf7Dix-TgBqiYRLquAmi7TgEE3oZcMUExQ25QY=") center / cover no-repeat fixed;
 }
+
 
 header {
   background-color: #1877f2;
@@ -25,6 +26,9 @@ nav {
   padding: 10px;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  position: sticky; /* Keeps the nav bar fixed at the top while scrolling */
+  top: 0;
+  z-index: 1000; /* Ensures it stays on top of other content */
 }
 
 nav a {
@@ -33,8 +37,16 @@ nav a {
   font-weight: bold;
 }
 
+nav a.active {
+  color: #ffffff; /* Text color for the active link */
+  background-color: #1877f2; /* Background color for the active link */
+  border-radius: 4px; /* Optional: round the corners for a button-like appearance */
+  padding: 5px 10px; /* Optional: add padding to make the active link look like a button */
+}
+
+
 .post {
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.719);
   border: 1px solid #ddd;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -42,9 +54,9 @@ nav a {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.post h2 {
+.post h2 a{
   margin-top: 0;
-  color: #1877f2;
+  color: #000000;
 }
 
 .post-meta {
@@ -137,8 +149,9 @@ nav a {
   text-align: center;
   padding: 10px;
   position: fixed;
+  width: 40%;
   top: 0;
-  left: 0;
+  /* left: 0; */
   right: 0;
   z-index: 1000;
 }
@@ -173,11 +186,14 @@ nav a {
 
 main {
   width: 70%;
+  height: auto;
+  overflow: scroll;
 }
 
 aside.sidebar {
   width: 20%;
   background-color: #f2f3f5; /* Ensure background color for sidebar */
+  height: 100px;
 }
 
 .notification-icon {
