@@ -5,7 +5,7 @@ body {
   width: 90%;
   margin: 0 auto;
   padding: 20px;
-  background-color: #f0f2f5;
+  background: url("https://media.istockphoto.com/id/1345527119/video/graphical-modern-digital-world-news-studio-loop-background.jpg?s=640x640&k=20&c=cr1SYYf7Dix-TgBqiYRLquAmi7TgEE3oZcMUExQ25QY=") center / cover;
 }
 
 header {
@@ -19,6 +19,7 @@ header {
 
 nav {
   display: flex;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
   justify-content: space-around;
   margin-bottom: 1rem;
   background-color: white;
@@ -31,10 +32,16 @@ nav a {
   color: #1877f2;
   text-decoration: none;
   font-weight: bold;
+  padding: 10px;
+  display: block; /* Ensure nav items are block-level for better spacing */
+}
+
+nav a:hover {
+  background-color: #f0f0f0;
 }
 
 .post {
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.719);
   border: 1px solid #ddd;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -42,9 +49,9 @@ nav a {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.post h2 {
+.post h2 a {
   margin-top: 0;
-  color: #1877f2;
+  color: #000000;
 }
 
 .post-meta {
@@ -123,60 +130,34 @@ nav a {
   overflow-wrap: break-word; /* Ensure content wraps */
 }
 
-.stories-updates {
-  background-color: #f2f3f5;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 5px;
-}
-
-#notification {
+#toast-notification {
   display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
   background-color: #1877f2;
   color: white;
-  text-align: center;
-  padding: 10px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-}
-
-.toggle-comments {
-  cursor: pointer;
-  color: #1877f2;
-  font-weight: bold;
-}
-
-.poll-options {
-  margin-top: 10px;
-}
-
-.poll-option {
-  background-color: #f2f3f5;
-  padding: 10px;
-  margin-bottom: 5px;
+  padding: 15px;
   border-radius: 5px;
-}
-
-.poll-option-score {
-  font-weight: bold;
-  color: #1877f2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  font-size: 14px;
 }
 
 .container {
   display: flex;
   justify-content: space-between;
   gap: 20px;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
 main {
-  width: 70%;
+  flex: 1;
+  overflow: scroll;
 }
 
 aside.sidebar {
-  width: 20%;
+  width: 100%;
   background-color: #f2f3f5; /* Ensure background color for sidebar */
 }
 
