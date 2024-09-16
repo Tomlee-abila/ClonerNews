@@ -143,8 +143,19 @@ const loadPosts = async () => {
 
 const handleNavClick = (event) => {
   event.preventDefault();
-  const clickedNav = event.target.id.split('-')[1];
-  switch (clickedNav) {
+  
+  // Remove the 'active' class from all navigation items
+  document.querySelectorAll('nav a').forEach(navItem => {
+    navItem.classList.remove('active');
+  });
+  
+  // Add the 'active' class to the clicked navigation item
+  const clickedNav = event.target;
+  clickedNav.classList.add('active');
+  
+  // Update the current post type based on the clicked navigation item
+  const clickedNavId = clickedNav.id.split('-')[1];
+  switch (clickedNavId) {
     case 'jobs':
       currentPostType = 'jobstories';
       break;
@@ -160,6 +171,7 @@ const handleNavClick = (event) => {
     default:
       currentPostType = 'topstories';
   }
+  
   document.getElementById('main-content').innerHTML = '';
   loadedPosts = 0;
   loadedPostIds.clear();
