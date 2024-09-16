@@ -215,7 +215,8 @@ const checkForUpdates = async () => {
     newPosts.slice(0, 5).forEach(post => {
       // const li = document.createElement('li');
       // li.textContent = `${post.type}: ${post.title || post.text}`;
-      let cont = `<li>${post.type}: ${post.title || post.text}</li>`
+      console.log(post)
+      let cont = `<li><p><h5>${post.type} by: ${post.by} </h5><br>${post.title || post.text}</p></li>`
       updatesList.innerHTML = cont + updatesList.innerHTML;
       loadedPostIds.add(post.id);
     });
