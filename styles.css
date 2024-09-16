@@ -19,7 +19,6 @@ header {
 
 nav {
   display: flex;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
   justify-content: space-around;
   margin-bottom: 1rem;
   background-color: white;
@@ -32,12 +31,6 @@ nav a {
   color: #1877f2;
   text-decoration: none;
   font-weight: bold;
-  padding: 10px;
-  display: block; /* Ensure nav items are block-level for better spacing */
-}
-
-nav a:hover {
-  background-color: #f0f0f0;
 }
 
 .post {
@@ -49,7 +42,7 @@ nav a:hover {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.post h2 a {
+.post h2 a{
   margin-top: 0;
   color: #000000;
 }
@@ -130,34 +123,62 @@ nav a:hover {
   overflow-wrap: break-word; /* Ensure content wraps */
 }
 
-#toast-notification {
+.stories-updates {
+  background-color: #f2f3f5;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+#notification {
   display: none;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
   background-color: #1877f2;
   color: white;
-  padding: 15px;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  padding: 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
-  font-size: 14px;
+}
+
+.toggle-comments {
+  cursor: pointer;
+  color: #1877f2;
+  font-weight: bold;
+}
+
+.poll-options {
+  margin-top: 10px;
+}
+
+.poll-option {
+  background-color: #f2f3f5;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+}
+
+.poll-option-score {
+  font-weight: bold;
+  color: #1877f2;
 }
 
 .container {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
 main {
-  flex: 1;
+  width: 70%;
+  height: auto;
   overflow: scroll;
 }
 
 aside.sidebar {
-  width: 100%;
+  width: 20%;
   background-color: #f2f3f5; /* Ensure background color for sidebar */
 }
 

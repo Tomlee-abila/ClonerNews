@@ -166,13 +166,13 @@ const handleNavClick = (event) => {
   loadPosts();
 }
 
-const showToastNotification = (message) => {
-  const toast = document.getElementById('toast-notification');
-  toast.textContent = message;
-  toast.style.display = 'block';
+const showNotification = (message) => {
+  const notification = document.getElementById('notification');
+  notification.textContent = message;
+  notification.style.display = 'block';
   setTimeout(() => {
-    toast.style.display = 'none';
-  }, 5000); // Display toast for 5 seconds
+    notification.style.display = 'none';
+  }, 3000);
 }
 
 const checkForUpdates = async () => {
@@ -185,7 +185,7 @@ const checkForUpdates = async () => {
   if (updates.items.length > 0 || updates.profiles.length > 0) {
     const updateTime = Date.now();
     if (updateTime - lastUpdateTime >= 5000) {
-      showToastNotification('New updates available!');
+      showNotification('New updates available!');
       lastUpdateTime = updateTime;
     }
     
@@ -255,6 +255,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Initialize sidebar with top, new, and best stories
+  fetchSidebarPosts('topstories', 'top-stories-list');
+  fetchSidebarPosts('newstories', 'new-stories-list');
+  fetchSidebarPosts('beststories', 'best-stories-list');
+  
   // Load existing post IDs
   const initialPosts = await fetchPosts(currentPostType, 0, POSTS_PER_PAGE);
   initialPosts.forEach(post => loadedPostIds.add(post.id));
