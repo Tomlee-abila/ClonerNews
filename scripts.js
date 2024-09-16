@@ -300,3 +300,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Set up interval for checking updates
   setInterval(throttle(checkForUpdates, 5000), 5000);
 });
+
+module.exports = {
+  throttle,
+  fetchItem,
+  fetchPosts,
+  renderPost,
+  renderPollContent,
+  loadComments,
+  showNotification,
+  handleNavClick,
+  checkForUpdates,
+  fetchSidebarPosts
+};
