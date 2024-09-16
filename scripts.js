@@ -26,7 +26,23 @@ const fetchItem = async (id) => {
   return response.json();
 }
 
+function extractObjectIDs(data) {
+  return data.hits.map(item => item.objectID);
+}
+
 const fetchPosts = async (postType, start, end) => {
+  if (postType === 'polls') {
+    const response = await fetch('https://hn.algolia.com/api/v1/search_by_date?tags=poll');
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const pollsIds = extractObjectIDs(data);
+    const newPolls = await Promise.all(pollsIds.slice(start, end).map(fetchItem));
+    return newPolls;
+  }
   const response = await fetch(`${API_BASE_URL}${postType}.json`);
   if (!response.ok) {
     throw new Error(`Failed to fetch posts of type ${postType}: ${response.statusText}`);
@@ -160,7 +176,7 @@ const handleNavClick = (event) => {
       currentPostType = 'jobstories';
       break;
     case 'polls':
-      currentPostType = 'pollstories';
+      currentPostType = 'polls';
       break;
     case 'ask':
       currentPostType = 'askstories';
